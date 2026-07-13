@@ -108,7 +108,6 @@ if not db_exists:
 
 query_input = st.sidebar.text_input("Search Keyword for ETL", config.SEARCH_QUERY)
 max_results_input = st.sidebar.slider("Max Results to Fetch", 5, 50, config.MAX_RESULTS)
-mock_mode = st.sidebar.checkbox("Force Mock Mode", value=not bool(config.YOUTUBE_API_KEY))
 
 if st.sidebar.button("🚀 Run ETL Pipeline", use_container_width=True):
     with st.spinner("Executing Extract-Transform-Load Pipeline..."):
@@ -119,7 +118,7 @@ if st.sidebar.button("🚀 Run ETL Pipeline", use_container_width=True):
             conn.execute("DROP TABLE IF EXISTS channels")
             conn.close()
             
-            run_pipeline(query=query_input, max_results=max_results_input, force_mock=mock_mode)
+            run_pipeline(query=query_input, max_results=max_results_input, force_mock=False)
             st.sidebar.success("ETL Run Completed!")
             st.rerun()
         except Exception as e:

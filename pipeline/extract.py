@@ -1,9 +1,17 @@
+import os
 import json
 import random
 import yt_dlp
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+def is_cloud_env():
+    """
+    Detects if the application is running inside a hosted cloud environment (Streamlit Cloud).
+    """
+    return os.getcwd().startswith('/app') or 'STREAMLIT_SHARING_AUTHORITY' in os.environ or 'STREAMLIT_SERVER_PORT' in os.environ
+
 
 def extract_from_youtube_api(api_key: str, query: str, max_results: int = 20):
     """
@@ -337,17 +345,27 @@ def extract(api_key: str, query: str, max_results: int = 20, force_mock: bool = 
         try:
             return extract_from_youtube_api(api_key, query, max_results)
         except Exception as e:
-            print(f"[EXTRACT] Failed extracting from YouTube API due to: {e}. Falling back to yt-dlp scraper.")
+            print(f"[EXTRACT] Failed extracting from YouTube API due to: {e}. Falling back to mock/scraper.")
+            if is_cloud_env():
+                # Avoid hanging on blocked cloud IP
+                return generate_mock_data(query, max_results)
             try:
                 return extract_via_ytdlp(query, max_results)
             except Exception:
                 return generate_mock_data(query, max_results)
     else:
+        # No API key
+        if is_cloud_env():
+            print("[EXTRACT] Running on cloud environment without API key. Falling back directly to mock data to avoid YouTube IP block.")
+            return generate_mock_data(query, max_results)
+            
+        # Local execution - attempt live scraping
         try:
             return extract_via_ytdlp(query, max_results)
         except Exception as e:
-            print(f"[EXTRACT] yt-dlp scraper failed: {e}. Falling back to Mock data generator.")
+            print(f"[EXTRACT] Local live scraper failed: {e}. Falling back to Mock data generator.")
             return generate_mock_data(query, max_results)
+
 
 
 
