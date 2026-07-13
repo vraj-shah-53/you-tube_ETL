@@ -225,7 +225,7 @@ def extract_via_ytdlp(query: str, max_results: int = 20):
             v_id = entry.get('id')
             if not v_id:
                 continue
-            c_id = entry.get('channel_id', f"UC_mock_chan_{v_id}")
+            c_id = entry.get('channel_id') or f"UC_mock_chan_{v_id}"
             
             # Generate a random publish date between 2024 and 2026 (spreading the dates)
             days_offset = random.randint(10, 800)
