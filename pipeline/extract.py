@@ -167,10 +167,17 @@ def generate_mock_data(query: str, max_results: int = 20):
         duration_seconds = random.randint(0, 59)
         duration_str = f"PT{duration_minutes}M{duration_seconds}S"
 
+        # Setup publication date with randomized hours and minutes to look realistic
+        days_offset = random.randint(1, 180)
+        hours_offset = random.randint(0, 23)
+        minutes_offset = random.randint(0, 59)
+        pub_date = datetime.now() - timedelta(days=days_offset, hours=hours_offset, minutes=minutes_offset)
+
         video_item = {
             "id": v_id,
             "snippet": {
-                "publishedAt": (datetime.now() - timedelta(days=random.randint(1, 180))).isoformat() + "Z",
+                "publishedAt": pub_date.isoformat() + "Z",
+
                 "channelId": c_id,
                 "title": title,
                 "description": f"This is a tutorial on {title}. We discuss architecture, best practices, and walk through code.",
