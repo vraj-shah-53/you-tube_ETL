@@ -38,7 +38,7 @@ def run_pipeline(query: str = None, max_results: int = None, force_mock: bool = 
     # 1. EXTRACT
     extract_start = time.time()
     try:
-        raw_videos, raw_channels = extract(api_key, search_query, max_res)
+        raw_videos, raw_channels = extract(api_key, search_query, max_res, force_mock=force_mock)
     except Exception as e:
         print(f"[ETL] Extraction stage failed: {e}")
         sys.exit(1)

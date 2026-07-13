@@ -70,40 +70,58 @@ def generate_mock_data(query: str, max_results: int = 20):
     Generates realistic mock data mimicking YouTube API JSON responses.
     Allows running the pipeline out-of-the-box without an API key.
     """
-    print(f"[EXTRACT] API key not provided. Generating MOCK data for query: '{query}'...")
+    print(f"[EXTRACT] Generating mock data for query: '{query}'...")
     
-    mock_channel_names = [
-        "Data Engineering Academy", "Tech With Vraj", "Cloud & Data Wizards",
-        "The Analytics Show", "Database Bytes", "Big Data Masterclass",
-        "Python Power", "AI & Data Solutions", "Infrastructure Insights",
-        "Tech Chronicles"
-    ]
-    
-    mock_titles = [
-        "Data Engineering Roadmap for 2026",
-        "How to Build a Modern Data Stack from Scratch",
-        "DuckDB vs SQLite: Which one should you use?",
-        "Building an ETL Pipeline in Python in 15 Minutes",
-        "What is Apache Spark? Architecture Explained",
-        "My Daily Routine as a Senior Data Engineer",
-        "SQL Tips I Wish I Knew Sooner",
-        "Airflow vs Prefect vs Dagster: Orchestration Comparison",
-        "How to prepare for Data Engineering Interviews",
-        "Real-Time Data Streaming with Kafka and Python",
-        "Introduction to Snowflake and Data Warehousing",
-        "Clean Code Practices for Data Pipeline Development",
-        "Docker for Data Engineers: A Quick Guide",
-        "Deploying Streamlit Apps to AWS Cloud",
-        "Why Polars is replacing Pandas in modern pipelines",
-        "Understanding Data Lakes vs Data Warehouses",
-        "How to write efficient SQL queries on BigQuery",
-        "A Day in the Life of a Data Engineer (Remote)",
-        "Top 5 Python Libraries every Data Engineer should know",
-        "Setting up CI/CD for Data Pipelines with Github Actions"
-    ]
-
     mock_categories = ["27", "28"]  # 27: Education, 28: Science & Technology
-    mock_tags = ["data engineering", "python", "etl", "sql", "duckdb", "streamlit", "tutorial", "big data", "programming", "cloud"]
+    
+    q_lower = query.lower() if query else ""
+    
+    if "virat" in q_lower or "kohli" in q_lower or "cricket" in q_lower:
+        mock_titles = [
+            "Virat Kohli's Top 10 Greatest Innings of All Time",
+            "Why Virat Kohli is the King of Run Chases",
+            "Virat Kohli Masterclass: Analysis of his Cover Drive Technique",
+            "How Virat Kohli Changed Indian Cricket Fitness Standards",
+            "Virat Kohli Century Highlights vs Australia in Test Cricket",
+            "The Rise of Virat Kohli: From U19 World Cup to Legend",
+            "Virat Kohli's Best Captaincy Moments in Test matches",
+            "Virat Kohli vs Sachin Tendulkar: Detailed Statistics Comparison",
+            "Virat Kohli Post Match Press Conference Highlights",
+            "A Tribute to Virat Kohli: 15 Years of International Cricket Dominance"
+        ]
+        mock_channel_names = ["Cricket Chronicles", "Sports Analysis Network", "The Cricket Show", "Legendary Sports", "ESPN Cricinfo Fan Zone"]
+        mock_tags = ["virat kohli", "cricket", "team india", "king kohli", "odi", "t20", "test cricket", "sports"]
+    elif "python" in q_lower or "code" in q_lower or "programming" in q_lower:
+        mock_titles = [
+            "Python Crash Course for Absolute Beginners (2026)",
+            "Top 10 Python Libraries You Must Learn",
+            "How I write clean, readable Python code",
+            "Python Object-Oriented Programming (OOP) Explained",
+            "Building a Web Scraper in Python from Scratch",
+            "Python List Comprehensions and Lambdas",
+            "Decorators and Generators in Python: Advanced Guide",
+            "FastAPI vs Flask vs Django: Which Python web framework to choose?",
+            "Data Analysis with Pandas and Jupyter Notebooks",
+            "10 Python Tips & Tricks to Write Shorter Code"
+        ]
+        mock_channel_names = ["Code With Python", "Developer Academy", "Python Power", "Tech With Vraj", "Programming Tips"]
+        mock_tags = ["python", "coding", "programming", "developer", "software engineering", "tutorial"]
+    else:
+        # Generate dynamic generic titles containing the query to make it relevant!
+        mock_titles = [
+            f"Complete Guide to {query.title()} in 2026",
+            f"Top 10 Secrets About {query.title()} You Didn't Know",
+            f"Why {query.title()} is Trending Right Now!",
+            f"Understanding {query.title()}: A Beginner's Tutorial",
+            f"{query.title()} Masterclass: From Zero to Hero",
+            f"How to Get Started with {query.title()} Today",
+            f"The Future of {query.title()}: Trends and Predictions",
+            f"5 Common Mistakes in {query.title()} and How to Avoid Them",
+            f"Is {query.title()} Worth Learning in 2026?",
+            f"Comparing {query.title()} with Alternative Technologies"
+        ]
+        mock_channel_names = ["Tech Chronicles", "Big Data Masterclass", "The Analytics Show", "Developer Network", "Cloud Academy"]
+        mock_tags = [q_lower, "technology", "tutorial", "guide", "education", "trends"]
 
     video_details = []
     channel_details = []
@@ -135,9 +153,6 @@ def generate_mock_data(query: str, max_results: int = 20):
         chan = channels_map[c_id]
 
         title = mock_titles[i]
-        # Mix in query if search query is specific
-        if query and query.lower() != "data engineering":
-            title = f"[{query.title()}] {title}"
 
         # Setup statistics
         views = random.randint(500, 350000)
@@ -162,7 +177,7 @@ def generate_mock_data(query: str, max_results: int = 20):
                     }
                 },
                 "channelTitle": chan["snippet"]["title"],
-                "tags": random.sample(mock_tags, k=random.randint(3, 6)),
+                "tags": random.sample(mock_tags, k=min(len(mock_tags), random.randint(3, 6))),
                 "categoryId": random.choice(mock_categories)
             },
             "contentDetails": {
@@ -174,10 +189,12 @@ def generate_mock_data(query: str, max_results: int = 20):
                 "commentCount": str(comments)
             }
         }
+        video_item['snippet']['tags'] = random.sample(mock_tags, k=min(len(mock_tags), random.randint(3, 6)))
         video_details.append(video_item)
 
     print(f"[EXTRACT] Generated {len(video_details)} mock videos and {len(channel_details)} mock channels.")
     return video_details, channel_details
+
 
 
 def extract_via_ytdlp(query: str, max_results: int = 20):
@@ -298,10 +315,13 @@ def extract_via_ytdlp(query: str, max_results: int = 20):
 
 
 
-def extract(api_key: str, query: str, max_results: int = 20):
+def extract(api_key: str, query: str, max_results: int = 20, force_mock: bool = False):
     """
-    Main extraction function. Decides whether to query YouTube API or run yt-dlp scraper.
+    Main extraction function. Decides whether to query YouTube API, run yt-dlp scraper, or generate Mock data.
     """
+    if force_mock:
+        return generate_mock_data(query, max_results)
+
     if api_key:
         try:
             return extract_from_youtube_api(api_key, query, max_results)
@@ -317,6 +337,7 @@ def extract(api_key: str, query: str, max_results: int = 20):
         except Exception as e:
             print(f"[EXTRACT] yt-dlp scraper failed: {e}. Falling back to Mock data generator.")
             return generate_mock_data(query, max_results)
+
 
 
 if __name__ == "__main__":
