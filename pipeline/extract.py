@@ -76,52 +76,56 @@ def generate_mock_data(query: str, max_results: int = 20):
     
     q_lower = query.lower() if query else ""
     
+    import random
+    random.seed(datetime.now().timestamp())
+    
+    # 1. Define base pools for topics
     if "virat" in q_lower or "kohli" in q_lower or "cricket" in q_lower:
-        mock_titles = [
-            "Virat Kohli's Top 10 Greatest Innings of All Time",
-            "Why Virat Kohli is the King of Run Chases",
-            "Virat Kohli Masterclass: Analysis of his Cover Drive Technique",
-            "How Virat Kohli Changed Indian Cricket Fitness Standards",
-            "Virat Kohli Century Highlights vs Australia in Test Cricket",
-            "The Rise of Virat Kohli: From U19 World Cup to Legend",
-            "Virat Kohli's Best Captaincy Moments in Test matches",
-            "Virat Kohli vs Sachin Tendulkar: Detailed Statistics Comparison",
-            "Virat Kohli Post Match Press Conference Highlights",
-            "A Tribute to Virat Kohli: 15 Years of International Cricket Dominance"
-        ]
-        mock_channel_names = ["Cricket Chronicles", "Sports Analysis Network", "The Cricket Show", "Legendary Sports", "ESPN Cricinfo Fan Zone"]
+        topics = ["Virat Kohli", "King Kohli", "Indian Cricket Team", "World Cup Cricket", "ODI & Test Cricket"]
+        formats = ["Greatest Innings of All Time", "Best Cover Drives Analysis", "Captaincy Milestones", "Fitness & Diet Secrets", "Century Highlights vs Australia", "Career Stats & Records", "Post-Match Press Conferences", "Batting Technique Deep Dive", "Top 10 Sixes", "Training Session Highlights"]
+        adjectives = ["Unbelievable", "Legendary", "Historical", "Classic", "Incredible", "Epic", "Masterclass", "Vintage", "Exclusive", "Raw & Uncut"]
+        mock_channel_names = ["Cricket Chronicles", "Sports Analysis Network", "The Cricket Show", "Legendary Sports", "ESPN Cricinfo Fan Zone", "Cricket Live 365"]
         mock_tags = ["virat kohli", "cricket", "team india", "king kohli", "odi", "t20", "test cricket", "sports"]
     elif "python" in q_lower or "code" in q_lower or "programming" in q_lower:
-        mock_titles = [
-            "Python Crash Course for Absolute Beginners (2026)",
-            "Top 10 Python Libraries You Must Learn",
-            "How I write clean, readable Python code",
-            "Python Object-Oriented Programming (OOP) Explained",
-            "Building a Web Scraper in Python from Scratch",
-            "Python List Comprehensions and Lambdas",
-            "Decorators and Generators in Python: Advanced Guide",
-            "FastAPI vs Flask vs Django: Which Python web framework to choose?",
-            "Data Analysis with Pandas and Jupyter Notebooks",
-            "10 Python Tips & Tricks to Write Shorter Code"
-        ]
-        mock_channel_names = ["Code With Python", "Developer Academy", "Python Power", "Tech With Vraj", "Programming Tips"]
+        topics = ["Python", "Python Coding", "Python Programming", "FastAPI & Django", "Pandas & Numpy"]
+        formats = ["Crash Course for Beginners", "Advanced Core Library Tips", "Clean Code Best Practices", "Object-Oriented Programming (OOP)", "Web Scraping Tutorial", "List Comprehensions & Lambdas", "Decorators & Generators", "Interview Questions Prep", "Automating Boring Tasks", "Project Walkthrough from Scratch"]
+        adjectives = ["Ultimate", "Complete", "Modern", "Advanced", "Beginner to Pro", "Step-by-Step", "Practical", "Mastering", "Comprehensive", "Simplified"]
+        mock_channel_names = ["Code With Python", "Developer Academy", "Python Power", "Tech With Vraj", "Programming Tips", "Software Dev Hub"]
         mock_tags = ["python", "coding", "programming", "developer", "software engineering", "tutorial"]
     else:
-        # Generate dynamic generic titles containing the query to make it relevant!
-        mock_titles = [
-            f"Complete Guide to {query.title()} in 2026",
-            f"Top 10 Secrets About {query.title()} You Didn't Know",
-            f"Why {query.title()} is Trending Right Now!",
-            f"Understanding {query.title()}: A Beginner's Tutorial",
-            f"{query.title()} Masterclass: From Zero to Hero",
-            f"How to Get Started with {query.title()} Today",
-            f"The Future of {query.title()}: Trends and Predictions",
-            f"5 Common Mistakes in {query.title()} and How to Avoid Them",
-            f"Is {query.title()} Worth Learning in 2026?",
-            f"Comparing {query.title()} with Alternative Technologies"
-        ]
-        mock_channel_names = ["Tech Chronicles", "Big Data Masterclass", "The Analytics Show", "Developer Network", "Cloud Academy"]
+        topics = [query.title(), f"{query.title()} Development", f"{query.title()} Core Concepts", f"{query.title()} Solutions", f"Modern {query.title()}"]
+        formats = ["Complete Guide", "Secrets Revealed", "Common Mistakes to Avoid", "Beginner's Tutorial", "Masterclass Training", "Implementation Tips", "Future Trends & Predictions", "Interview Questions & Answers", "Comparison & Alternatives", "Hands-on Project Guide"]
+        adjectives = ["Ultimate", "Advanced", "Practical", "Complete", "Simplified", "Comprehensive", "Deep Dive", "Standard", "Efficient", "Optimal"]
+        mock_channel_names = ["Tech Chronicles", "Big Data Masterclass", "The Analytics Show", "Developer Network", "Cloud Academy", "Digital Solutions"]
         mock_tags = [q_lower, "technology", "tutorial", "guide", "education", "trends"]
+
+    # 2. Generate unique combinations to fulfill the requested count
+    generated_titles = []
+    seen_titles = set()
+    
+    attempts = 0
+    while len(generated_titles) < max_results and attempts < 500:
+        attempts += 1
+        adj = random.choice(adjectives)
+        top = random.choice(topics)
+        fmt = random.choice(formats)
+        year = random.choice(["2025", "2026"])
+        
+        # Structure variations
+        structure = random.choice([
+            f"{adj} {top} {fmt} ({year})",
+            f"{top} {fmt}: {adj} Guide",
+            f"Why you should learn {top} in {year} - {adj} Tutorial",
+            f"Top 5 {adj} {top} {fmt} for {year}"
+        ])
+        
+        if structure not in seen_titles:
+            seen_titles.add(structure)
+            generated_titles.append(structure)
+            
+    # Fallback to simple numbering if combinations run dry
+    while len(generated_titles) < max_results:
+        generated_titles.append(f"{query.title()} Ingestion Video Part {len(generated_titles) + 1}")
 
     video_details = []
     channel_details = []
@@ -146,13 +150,12 @@ def generate_mock_data(query: str, max_results: int = 20):
         channel_details.append(channels_map[c_id])
 
     # Generate videos
-    random.seed(datetime.now().timestamp())
-    for i in range(min(max_results, len(mock_titles))):
+    for i in range(max_results):
         v_id = f"mock_vid_{200 + i}"
         c_id = random.choice(list(channels_map.keys()))
         chan = channels_map[c_id]
 
-        title = mock_titles[i]
+        title = generated_titles[i]
 
         # Setup statistics
         views = random.randint(500, 350000)
@@ -194,6 +197,7 @@ def generate_mock_data(query: str, max_results: int = 20):
 
     print(f"[EXTRACT] Generated {len(video_details)} mock videos and {len(channel_details)} mock channels.")
     return video_details, channel_details
+
 
 
 
