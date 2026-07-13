@@ -113,6 +113,12 @@ mock_mode = st.sidebar.checkbox("Force Mock Mode", value=not bool(config.YOUTUBE
 if st.sidebar.button("🚀 Run ETL Pipeline", use_container_width=True):
     with st.spinner("Executing Extract-Transform-Load Pipeline..."):
         try:
+            # Clear old records first so we only show the new search results
+            conn = duckdb.connect(config.DB_PATH)
+            conn.execute("DROP TABLE IF EXISTS videos")
+            conn.execute("DROP TABLE IF EXISTS channels")
+            conn.close()
+            
             run_pipeline(query=query_input, max_results=max_results_input, force_mock=mock_mode)
             st.sidebar.success("ETL Run Completed!")
             st.rerun()
@@ -124,11 +130,18 @@ st.sidebar.subheader("Offline Dataset Option")
 if st.sidebar.button("📥 Load Real Kaggle CSV", use_container_width=True):
     with st.spinner("Downloading and importing Kaggle YouTube dataset..."):
         try:
+            # Clear database first so we don't mix different datasets
+            conn = duckdb.connect(config.DB_PATH)
+            conn.execute("DROP TABLE IF EXISTS videos")
+            conn.execute("DROP TABLE IF EXISTS channels")
+            conn.close()
+            
             import_and_load_csv(1000)
             st.sidebar.success("Import Completed!")
             st.rerun()
         except Exception as e:
             st.sidebar.error(f"Import failed: {e}")
+
 
 
 if st.sidebar.button("🗑️ Clear Database", use_container_width=True):
